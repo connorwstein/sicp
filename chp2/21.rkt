@@ -142,21 +142,63 @@
 (mycdr test)
 
 ; Exercise 2.5 
-; show that we can represent pairs of non-negative integers 
+; show that we can represent pairs of non-negative integers a, b as an integer
+; 2^a * 3^b
+; We can just keep dividing by 2 until we get an odd number and vice-versa for b
+(define (pair-cons a b) (* (expt 2 a) (expt 3 b)))
+(define (count-div x y) 
+	(define (div val i) 
+		(if (= (remainder val y) 0) (div (/ val y) (+ i 1)) (- i 1)))
+	(div x 1)
+)
+(define (pair-car p) 
+	(count-div p 2)
+)
+(define (pair-cdr p) 
+	(count-div p 3)
+)
+(define p (pair-cons 3 1))
+(pair-car p) ; should be 3 
+(pair-cdr p) ; should be 1
+
+(define k (pair-cons 4 11))
+(pair-car k) ; should be 4
+(pair-cdr k) ; should be 11
 
 
+; Exercise 2.6 
+; Zero is a function of f which returns the identity function
+(define zero (lambda (f) (lambda (x) x)))
 
 
+; add-1 n is a function f which basically wraps an additional f around x 
+; 
+(define (add-1 n)
+  (lambda (f) (lambda (x) (f ((n f) x)))))
 
+; lambda (f) (lambda (x) (f ((zero f) x))))
+; lambda (f) (lambda (x) (f (f x))))
+; Basically wraps another f 
 
+; These church numerals mean the function is composed with itself n number of times
+(define one 
+	(lambda (f) (lambda (x) (f x))))
 
+(define two 
+	(lambda (f) (lambda (x) (f (f x)))))
+	
+; three would be
+; 	" " f (f (f x)))
+; Need a way of wrapping the result in f's n1 + n2 times
+(define (add n1 n2) 
+  (lambda (f) (lambda (x) ((n1 f) ((n2 f) x))))
+)
 
+(define (inc n) (+ n 1))
+; This is brilliant, it unwraps n times so it becomes 
+; f(f(f(...f(0)))) where f is the increment function
+(define (print-church n) 
+   (display ((n inc) 0)) (newline)) 
 
-
-
-
-
-
-
-
-
+(print-church two)
+(print-church (add one two))
