@@ -65,6 +65,98 @@
     (if (null? l) null (cons (* x (car l)) (scale-up2 x (cdr l)))))
 (scale-up2 2 (list 1 2 3 4))
 
+; Exercise 2.21 
+(define (square-list items)
+  (if (null? items)
+      null
+      (cons (* (car items) (car items)) (square-list (cdr items)))))
+(define (square-list-2 items)
+  (map (lambda (x) (* x x)) items))
+
+(print "sq lists 1")
+(square-list (list 1 2 3))
+(print "sq lists 2")
+(square-list-2 (list 1 2 3))
+
+; Exercise 2.22 its reversed because he isn't consing in the right order
+; The second case the list 1 2 3 4 gets built
+; via (cons (cons (cons nil 1) 4) 9) which is also not the list we want
+
+
+; Exercise 2.23
+(define (for-each f l)
+  (cond ((not (null? l)) (f (car l)) (for-each f (cdr l))))
+)
+(for-each (lambda (x) (newline) (display x))
+          (list 57 321 88))
+
+(define tree (list 1 (list 2 (list 3 4))))
+(define (count-leaves x)
+  (cond ((null? x) 0)  
+        ((not (pair? x)) 1)
+        (else (+ (count-leaves (car x))
+                 (count-leaves (cdr x))))))
+
+(newline)
+(display "leaves")
+(newline)
+(count-leaves tree)
+
+; Exercise 2.25
+; 1 3 (5 7) 9 --> cdr cdr car cdr car
+
+
+; Exercise 2.26
+; cons (list 1 2) (list 3 4)  results in (1 2) 3 4
+; list (list 1 2) (list 3 4) results in (1 2) (3 4)
+; append results in (1 2 3 4)
+
+; Exercise 2.27
+; Write a deep reverse function which takes in a list of lists
+; and reverse the list as well as the sublists
+(define (normal-rev x) 
+    (define (iter curr res)
+        (if (null? (cdr curr)) 
+            (cons (car curr) res) 
+            (iter (cdr curr) (cons (car curr) res)))
+    )
+    (iter x null)
+)
+
+(normal-rev (list 1 2 3 4 5 6 )) ; Should return (4 3) (2 1)
+(define (deep-rev x)
+    (define (iter curr res)
+            (if (null? (cdr curr))
+                (cons (if (pair? (car curr)) (deep-rev (car curr)) (car curr)) res)
+                (iter (cdr curr) (cons (if (pair? (car curr)) (deep-rev (car curr)) (car curr)) res)))
+        
+    )
+    (iter x null)
+)
+
+(deep-rev (list (list 1 2) 3 4 (list 5 6)))
+
+; Exercise 2.29 Binary mobile
+(define (make-mobile left right)
+  (list left right))
+
+(define (make-branch length structure)
+  (list length structure))
+
+(define (left-branch m) (car m))
+(define (right-branch m) (car (cdr m)))
+(define (branch-length b) (car b))
+(define (branch-structure b) (car (cdr b)))
+(define mobile (make-mobile (make-branch 1 2) (make-branch 3 4)))
+(define mobile2 (make-mobile (make-branch 1 5) (make-branch 3 mobile)))
+(define (total-weight m)
+    (cond ((null? m) 0)
+          ((not (pair? m)) m)
+          (else (+ (total-weight (branch-structure (left-branch m))) (total-weight (branch-structure (right-branch m))))))
+)
+
+(total-weight mobile) ; 6
+(total-weight mobile2) ; 11
 
 
 
