@@ -160,6 +160,76 @@
 
 
 
+; Exercise 2.30 square tree
+; damn this is cool
+(define (square-tree tree)
+    (define (square x) (* x x))
+    (map (lambda (sub-tree) (if (pair? sub-tree) (square-tree sub-tree) (* sub-tree sub-tree))) tree)
+)
+(square-tree (list 1 (list 2 3)))
+
+(append (list 1 2) (list 3 4))
+
+
+; Generic filter function
+(define (filter predicate sequence)
+  (cond ((null? sequence) null)
+        ((predicate (car sequence))
+         (cons (car sequence)
+               (filter predicate (cdr sequence))))
+        (else (filter predicate (cdr sequence)))))
+
+; Generic accumulate function
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+; Exercise 2.33
+(define (mymap p sequence)
+  (accumulate (lambda (x y) (cons (p x) y)) null sequence))
+(define (square x) (* x x))
+(mymap square (list 1 2 3 5 6))
+(define (myappend seq1 seq2)
+    (accumulate cons seq2 seq1))
+(myappend (list 1 2) (list 3 4))
+; Note here that the y is like the running count
+; and if we were folding left it would be x
+(define (mylength sequence)
+  (accumulate (lambda (x y) (+ y 1)) 0 sequence))
+(mylength (list 1 2 3 4))
+
+; Exercise 2.38
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+(accumulate / 1 (list 1 2 3)) ;  3/1 --> 3/2 --> 3/2/1 --> 3/2
+(fold-left / 1 (list 1 2 3)) ; 1/1 --> 1/2 --> 1/2/3 --> 1/6 
+(accumulate list null (list 1 2 3)) ; (1 (2 (3 ()))))
+(fold-left list null (list 1 2 3)) ; (((() 1) 2) 3)
+; for op to produce the same sequence for fold left and right
+; you need op x y = op y x (commutative)
+
+; Exercise 2.39
+(define (acc-reverse sequence)
+  (accumulate (lambda (x y) (append y (list x))) null sequence)) ; basically you want to keep adding to the head of the list here
+(acc-reverse (list 1 2 3 4 5))
+
+
+
+
+
+
+
+
+ 
+
 
 
 
