@@ -222,25 +222,94 @@
 (acc-reverse (list 1 2 3 4 5))
 
 
+; Builds a linked list from low to high
+(define (enumerate-interval low high)
+  (if (> low high)
+      null 
+      (cons low (enumerate-interval (+ low 1) high))))
+
+; Generate all the ordered pairs up to n
+; First this says map some f on onto the sequence enumerate-interval 0-10
+; That f converts EACH individual element of the sequence into a list of pairs
+; We then accumulate all these lists into a single list of all the pairs
+(define n 10)
+(accumulate append
+            null 
+            (map (lambda (i)
+                   (map (lambda (j) (list i j))
+                        (enumerate-interval 1 (- i 1))))
+                 (enumerate-interval 1 n)))
+
+; Simpler example
+(accumulate append null (list (list (list 1 2) (list 3 4)))) ; converts this to ((1 2) (3 4))
+; Commonly used, lets call it flatmap
+(define (flatmap proc seq)
+  (accumulate append null (map proc seq)))
 
 
+(define (permutations s)
+  (if (null? s)                    ; empty set?
+      (list null)                   ; sequence containing empty set
+      (flatmap (lambda (x)
+                 (map (lambda (p) (cons x p))
+                      (permutations (remove x s))))
+               s)))
 
+(permutations (list 1 2 3))
 
+; Exercise 2.42 N-Queeens
+; How to place N queens on an NxN chess board so that no 2 queens are on the 
+; same row, column or diagonal
+; Complete the representation for board positions
+; safe, adjoin-position 
+; Board positions can be a list of lists and 1's indicate the presence of a queen
+; i.e. A = ((0 0 1 0) (1 0 0 0) (0 0 0 1) (0 1 0 0)) is a valid 4x4 solution
 
+; This function needs to take something like  A above minus the last column (rest-of-queens)
+; and produce A  where new-row is the row with the queen in the last column
+; k is index of that last row 
+; Need to walk through every row of rest-of-queens and if the row index is new-row we add a 1
+; otherwise we add a 0
+; (define (for-each f l)
+;   (cond ((not (null?  (f (car l)) (for-each f (cdr l))))
+; )
+(define (adjoin-position new-row k rest-of-queens)
+    (cons new-row rest-of-queens)
+)
+; Check if the queen in the kth column is safe
+; We already know its in a different column, just need to check diagonals 
+; and rows
+; Walk from the left hand side to the right
+; This rest-of-queens should just be a list of the queen positions (index in the list indicates
+; the row
+(define (safe? k positions) 
+    ; start from our queen and walk to the right
+    ; return true or false if safe 
+    (define queen (car positions))
+    
+    (define (iter curr left-diag right-diag)
+        (cond ((null? curr) #t)
+              ((= queen (car curr)) #f)
+              ((= left-diag (car curr)) #f)
+              ((= right-diag (car curr)) #f)
+              (else (iter (cdr curr) (- left-diag 1) (+ right-diag 1))))
+    )
+    (iter (cdr positions) (- queen 1) (+ queen 1))
+)
+(define empty-board '())
+(define (queens board-size)
+  (define (queen-cols k)  
+    (if (= k 0)
+        (list empty-board)
+        (filter
+         (lambda (positions) (safe? k positions))
+         (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position new-row k rest-of-queens))
+                 (enumerate-interval 1 board-size)))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size))
 
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+(queens 4)
 
