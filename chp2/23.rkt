@@ -1,5 +1,6 @@
 #lang racket
 
+; ---- 2.3.1 -----
 ; Use the ' as a literal quotation
 (define t '(a b c))
 (car t)
@@ -22,8 +23,30 @@
 (my-eq '((1 2) b) '((1 2) b))
 
 
+
+; ---- 2.3.2 -----
 ; Exercise 2.56 
 ; show how to extend the basic differentiator to handle more kinds of expressions
+
+; Exercise 2.57 
+; Extend the deriv to support sums and product of abritrary sizes
+
+; Exercise 2.58
+; Infix notation
+;(x + (3 * (x + (y + 2))))
+; Part A is straightforward Need to change our selectors for example
+; product? x would just check cadr x for '* rather than car x
+; and all the list '* m1 m2 would be come 'm1 * m2
+; Part B 
+; how to handle for example exp (x + 3 * (x + y + 2))?
+
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
 (define (variable? x) (symbol? x))
 (define (same-variable? v1 v2)
   (and (variable? v1) (variable? v2) (eq? v1 v2)))
@@ -47,11 +70,19 @@
 (define (sum? x)
   (and (pair? x) (eq? (car x) '+)))
 (define (addend s) (cadr s))
-(define (augend s) (caddr s))
+; Augend should be the sum of the rest of the terms
+; Trying to be able to support something like (+ x (* 2 x) x y), a sum with three terms
+; can we do a fold-left here?
+; S could be an expression like 
+(define (augend s) 
+    (accumulate make-sum 0 (cddr s))
+)
 (define (product? x)
   (and (pair? x) (eq? (car x) '*)))
 (define (multiplier p) (cadr p))
-(define (multiplicand p) (caddr p))
+(define (multiplicand p) 
+    (accumulate make-product 1 (cddr p))
+)
 
 ;exponentiation?, base, exponent, and make-exponentiation
 ; ** 2 3 --> 2 to the power of 3
@@ -98,8 +129,47 @@
 (display "taking derivative of x^3 w.r.t x" )
 (newline)
 (deriv '(** x 3) 'x)
+(newline)
+(deriv '(+ x x (** x 2) x x) 'x)
+(newline)
+(deriv '(* x x 2) 'x) ; 2x + 2x --> 4x
+
+
+; ---- 2.3.3 -----
+(define (element-of-set? x set)
+  (cond ((null? set) false)
+        ((equal? x (car set)) true)
+        (else (element-of-set? x (cdr set)))))
+(define (adjoin-set x set)
+  (if (element-of-set? x set)
+      set
+      (cons x set)))
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) '())
+        ((element-of-set? (car set1) set2)        
+         (cons (car set1)
+               (intersection-set (cdr set1) set2)))
+        (else (intersection-set (cdr set1) set2))))
+; Exercise 2.59 Implement the union set
+; elements that are in either set are in the union
+; if either set is null return the other set
+; otherwise keep 
+(define (union-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) (if (null? set1) set2 set1))
+        ((not (element-of-set? (car set1) set2))
+         (cons (car set1)
+               (union-set (cdr set1) set2)))
+        (else (union-set (cdr set1) set2)))
+)
+(print "Union set test")
+(newline)
+(union-set '(1 2 3) '(3 4))
+(newline)
+(union-set '(1 2) '(1 2 10 12))
+
+
 ; Exercise 2.60
-(define (element-of-set? s e)
+(define (element-of-set-dup? s e)
   (define (iter curr)
     (if (null? curr) 
          #f 
@@ -107,17 +177,47 @@
   )
   (iter s)
 )
-(element-of-set? (list 1 2 3) 4)
-
-(define (adjoin-set s e)
+(element-of-set-dup? (list 1 2 3) 4)
+(define (adjoin-set-dup s e)
   (cons e s)
 )
-(adjoin-set (list 1 2 3) 4)
-
-(define (union-set s1 s2)
+(adjoin-set-dup (list 1 2 3) 4)
+(define (union-set-dup s1 s2)
   (append s1 s2)
 )
-(union-set (list 1 2 3) (list 4 5 6))
+(union-set-dup (list 1 2 3) (list 4 5 6))
+
+; Exercise 2.61
+; adjoin-set using the ordered representation
+; Need to find where to insert this guy
+; Just walk until you find something greater
+(define (adjoin-set-ordered s1 x)
+   (define (iter res curr)
+    (cond ((null? curr) (append res x))
+          (else (if (> (car curr) x) 
+                    (append res (cons x curr)) 
+                    (iter (append res (list (car curr))) (cdr curr))))))
+    (iter null s1) 
+)
+(adjoin-set-ordered '(1 2 10) 3)
+
+; Exercise 2.62 O(n) implementation of union set
+; Can do this like merge sort style?
+; if one of the lists is empty, append the other list to the result
+; 
+(define (union-set-ordered s1 s2)
+   (define (iter res c1 c2)
+        (cond ((or (null? c1) (null? c2)) (if (null? c1) (append res c2) (append res c1)))
+              ((= (car c1) (car c2)) (iter (append res (list (car c1))) (cdr c1) (cdr c2)))
+              ((< (car c1) (car c2)) (iter (append res (list (car c1))) (cdr c1) c2))
+              ((< (car c2) (car c1)) (iter (append res (list (car c2))) c1 (cdr c2)))
+        ))
+    (iter null s1 s2)
+)
+(newline)
+(print "union set ordered")
+(newline)
+(union-set-ordered '(1 2 3) '(3 4 5))
 
 ; Exercise 2.63
 ; Do the following procedures produce the same two lists 
@@ -150,3 +250,4 @@
 
 
 
+; ---- 2.3.4 -----
