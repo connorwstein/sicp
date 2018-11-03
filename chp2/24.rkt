@@ -249,17 +249,50 @@
 (deriv '(+ (* 3 (** x 2)) (* 2 x)) 'x) ; Works!
 
 
+; Exercise 2.74
+; Each divisions employee records contain a single file containing records keyed by employees names
+; The structure of the records varies by division. The records can contain keyed records themselves,
+; keyed by address or salary for example
+; Implement a get-record procedure which is applicable to any file
+; Idea is to have a generic get-record which calls the appropriate get-record depending on the division
+; type. Need to know the type of the key
+; Assume tag is just a division number prepended to the actual key
 
+; Returns a typed record (to aid with decoding)
+; (define (get-record key file)
+;     (attach-tag (division file) (get 'get-record (division file)) (contents key))
+; )
+; (put 'get-record 1 (define (div-1-get-record key) (...) ))
+; (get-record (attach-tag 1 "bob"))
 
+;b) Implement for headquarters a get-salary procedure that returns the salary information from a 
+; given employee's record from any division's personnel file. How should the record be structured in order to make this operation work?
+; Say the record is a cons of type and contents
+; The record is typed, use the type to get the get-salary function for that type, then use it to lookup the 
+; the contents
+; (define (get-salary record) 
+;     (let ((type (car record))
+;           (contents (cdr record)))
+;         ((get 'get-salary type) contents))
+; )
 
+;c) Implement for headquarters a find-employee-record procedure. This should search all the divisions' files for the record of a given employee and return the record. Assume that this procedure takes as arguments an employee's name and a list of all the divisions' files
+; We have to check each division 
+; using get-record which based on the file type will know how to search it
+; (define (find-employee-record name files) 
+;     (define (iter record rem-files)
+;         (if (null? (car rem-files)) 
+;             record
+;             (iter (get-record name) (cdr rem-files))))
+;     (iter null files)
+; )
 
+; d) Need to expose a get-record function for that division which knows about their structure
 
-
-
-
-
-
-
-
-
-
+; Exercise 2.76 
+; Generic operations with explicit data dispatch: Great for adding new operations because we call a specific type-op function based on the object
+; type 
+; Message-passing: Great for adding new types as all the operating information is contained within the type, but adding new operations 
+; results in changing every type 
+; Data-directed: Really is the solution to both problems - we have a table of operations and types and to extend either just involves
+; updating the table
