@@ -58,12 +58,38 @@
 (mf 'how-many-calls)
 
 
+; Exercise 3.5
+; Estimating integrals with a monte-carlo algorithm
+(define (random-in-range low high)
+  (let ((range (- high low)))
+    (+ low (random range))))
 
+(display "Monte carlo" )
+(newline)
+(random-in-range 0 100)
+; Estimate the region size of P
+(define (estimate-integral P x1 y1 x2 y2) 
+	(define (evaluate)
+		(P (random-in-range x1 x2) (random-in-range y1 y2)))
+	(* 4.0 (monte-carlo 10000 evaluate))
+)
+; Return whether point is in the unit circle
+; x^2 + y ^2 < 1
+(define (P x y)
+	(<= (+ (square x) (square y)) 1)
+)
 
+(define (monte-carlo trials experiment)
+  (define (iter trials-remaining trials-passed)
+    (cond ((= trials-remaining 0)
+           (/ trials-passed trials))
+          ((experiment)
+           (iter (- trials-remaining 1) (+ trials-passed 1)))
+          (else
+           (iter (- trials-remaining 1) trials-passed))))
+  (iter trials 0))
 
-
-
-
+(estimate-integral P -1.0 -1.0 1.0 1.0)
 
 
 
