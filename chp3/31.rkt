@@ -57,6 +57,41 @@
 (mf 'reset-counter)
 (mf 'how-many-calls)
 
+; Exercise 3.3
+; Make account
+(define (make-account balance password)
+  (define saved-passwords (list password))
+   
+  (define (withdraw amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds"))
+  (define (deposit amount)
+    (set! balance (+ balance amount))
+    balance)
+  (define (valid-pass pass saved)
+    ; Walk through list of saved
+    (cond ((null? saved) #f)
+          ((eq? pass (car saved)) #t)
+          (else (valid-pass pass (cdr saved)))))
+  (define (add-pass new-pass) 
+    (set! saved-passwords (append saved-passwords (list new-pass))))
+  (define (dispatch password m)
+    (if (valid-pass password saved-passwords)
+    (cond ((eq? m 'withdraw) withdraw)
+          ((eq? m 'deposit) deposit)
+          ((eq? m 'add-pass) add-pass)
+          (else (error "Unknown request -- MAKE-ACCOUNT"
+                       m)))
+    (error "Invalid password")))
+  dispatch)
+
+(display "Secret password")
+(define acc (make-account 100 'secret-password))
+((acc 'secret-password 'withdraw) 10)
+; ((acc 'incorrect 'withdraw) 10)
+
 
 ; Exercise 3.5
 ; Estimating integrals with a monte-carlo algorithm
@@ -90,6 +125,19 @@
   (iter trials 0))
 
 (estimate-integral P -1.0 -1.0 1.0 1.0)
+
+
+; Exercise 3.7
+(define (make-joint acc current-pass new-pass)
+    ; Add an additional password to the password protected account
+    ((acc current-pass 'add-pass) new-pass)
+)
+
+(define a1 (make-account 100 'pass))
+((a1 'pass 'withdraw) 10)
+; ((a1 'other 'withdraw) 10)
+(make-joint a1 'pass 'other)
+((a1 'other 'withdraw) 10)
 
 
 
