@@ -112,6 +112,121 @@
 (check-cycle-fast-slow '(1 2 3)) ; #f
 
 
+; Exercise 3.21
+(define (front-ptr queue) (car queue))
+(define (rear-ptr queue) (cdr queue))
+(define (set-front-ptr! queue item) (set-car! queue item))
+(define (set-rear-ptr! queue item) (set-cdr! queue item))
+(define (empty-queue? queue) (null? (front-ptr queue)))
+(define (make-queue) (cons '() '()))
+(define (front-queue queue)
+  (if (empty-queue? queue)
+      (error "FRONT called with an empty queue" queue)
+      (car (front-ptr queue))))
+(define (insert-queue! queue item)
+  (let ((new-pair (cons item '())))
+    (cond ((empty-queue? queue)
+           (set-front-ptr! queue new-pair)
+           (set-rear-ptr! queue new-pair)
+           queue)
+          (else
+           (set-cdr! (rear-ptr queue) new-pair)
+           (set-rear-ptr! queue new-pair)
+           queue)))) 
+(define (delete-queue! queue)
+  (cond ((empty-queue? queue)
+         (error "DELETE! called with an empty queue" queue))
+        (else
+         (set-front-ptr! queue (cdr (front-ptr queue)))
+         queue))) 
+; Problem is if the front pointer points to null there is nothing in the queue (the rear is irrelavent)
+; but lisp will still print the rear. Lets just walk through the queue
+(define (print-queue q) 
+	(if (null? q) 
+		(display "done") 
+		(begin (display (car q)) (print-queue (cdr q))))
+)
+(define q1 (make-queue))
+(insert-queue! q1 'a)
+(print-queue q1)
+(insert-queue! q1 'b)
+(print-queue q1)
+(delete-queue! q1)
+(print-queue q1)
+(delete-queue! q1)
+(print-queue q1)
+
+; Exercise 3.22
+(define (make-queue-internal)
+  (let ((front-ptr '())
+        (rear-ptr '()))
+	(define (insert item) 
+	  (let ((new-pair (cons item '())))
+		(cond ((empty-queue?)
+			   (set! front-ptr new-pair)
+			   (set! rear-ptr new-pair))
+			  (else
+			   (set-cdr! rear-ptr new-pair)
+			   (set! rear-ptr new-pair)))))
+	(define (delete) 
+		(if (empty-queue?) (display "Queue empty") (set! front-ptr (cdr front-ptr))))
+	(define (print-queue) 
+		(display front-ptr)
+	)
+	(define (empty-queue?) (null? front-ptr))
+    (define (dispatch m) 
+		(cond ((eq? m 'insert) insert)
+			  ((eq? m 'empty-queue) empty-queue?)
+			  ((eq? m 'print-queue) print-queue)
+			  ((eq? m 'delete) delete)
+			  (else (display "unknown"))))
+    dispatch))
+(define q (make-queue-internal))
+((q 'empty-queue))
+((q 'insert) 'a)
+((q 'empty-queue))
+((q 'insert) 'b)
+((q 'print-queue))
+((q 'delete))
+((q 'print-queue))
+((q 'delete))
+((q 'print-queue))
+((q 'insert) 'c)
+((q 'print-queue))
+
+; Exercise 3.23
+; How to represent a deque using pairs?
+; front-deque and rear-deque, and mutators front-insert-deque!, rear-insert-deque!, front-delete-deque!, and rear-delete-deque!
+(define (make-dq) (cons '() '()))
+(define (front-dq-ptr dq) (car dq))
+(define (rear-dq-ptr dq) (cdr dq))
+(define (set-front-dq-ptr! queue item) (set-car! queue item))
+(define (set-rear-dq-ptr! queue item) (set-cdr! queue item))
+(define (empty-dq? dq) (null? (front-dq-ptr dq)))
+; each item --> [back [item next]]
+(define (prev item) (car item))
+(define (next item) (cddr item))
+(define (item _item) (cadr _item))
+(define (set-prev! item prev) (set-car! item prev))
+(define (set-next! item next) (set-cdr! (cdr item) next))
+
+; Need to update both front and back pointers, still special case 
+; for empty 
+(define (rear-insert-dq dq item) 
+	(let ([new-item (cons (cons '() item) '())])
+	(cond ((empty-dq? dq) 
+		   (set-front-dq-ptr! dq new-item)
+		   (set-rear-dq-ptr! dq new-item))
+		  (else ; set the new-items back pointer to rear, set the rear cdr
+		   (set-prev! new-item (rear-dq-ptr dq))
+		   (set-rear-dq-ptr! new-item))))
+)
+(define dq (make-dq))
+(rear-insert-dq dq 'a)
+dq
+; Other functions similar, just manipulate prev and next appropriately
+
+
 
 
 
