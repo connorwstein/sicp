@@ -51,6 +51,52 @@
 ; If there wasn't any memoization then display-stream would fire accum again (after stream-ref did) and the sum would be different.
 
 
+; Trippy:
+; (define (integers-starting-from n)
+;   (cons-stream n (integers-starting-from (+ n 1))))
+; 
+; (define integers (integers-starting-from 1))
+; its an infinite stream - looks like infinite recursion but because the "cons-stream a b"
+; actually is a "cons a (delay b)" it doesn't fire
+
+; Exercise 3.53
+; (define s (cons-stream 1 (add-streams s s)))
+; Produces 1,2,4,8,16,32 ...
+; because the definition is saying stream[i] = stream[i-1] + stream[i-1] starting at 1.
+; the i-1 comes from the fact that s is defined in terms of itself
+
+
+; Exercise 3.64
+; (define (stream-limit stream tolerance)
+;   (define (iter curr prev)
+;     (cond ((stream-null? curr) 'test)
+;           ((< (abs (- (stream-car curr) (stream-car prev))) tolerance) (stream-car curr))
+;           (else (iter (stream-cdr curr) (stream-cdr prev)))
+;     ))
+;   (iter (stream-cdr stream) stream)
+;   )
+
+
+; Exercise 3.67
+; (define (pairs s t)
+;   (cons-stream
+;    (list (stream-car s) (stream-car t))
+;     (interleave
+;       (stream-map (lambda (x) (list x (stream-car t))) 
+;                  (stream-cdr s))
+;        (interleave
+;         (stream-map (lambda (x) (list (stream-car s) x))
+;                     (stream-cdr t))
+;         (pairs (stream-cdr s) (stream-cdr t))))))
+; 
+
+
+
+
+
+
+
+
 
 
 
