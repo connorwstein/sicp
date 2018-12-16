@@ -94,3 +94,38 @@
 	)
 	(cons (make-lambda (get-vars (cadr let-statement)) cddr let-statement) (get-exp (cadr let-statement)))
 )
+
+
+; Exercise 4.11
+; Represent the frame as a single list of bindings
+; (single list of pairs)
+; List of lists
+; (define (make-frame variables values)
+;     (if (null? (cdr variables)) 
+;         (list (cons (car variables) (car values))) 
+;         (append (cons (car variables) (car values)) 
+;                 (make-frame (cdr variables) (cdr values)))))
+; Or list of pairs
+(define (make-frame variables values)
+    (map cons variables values)
+)
+(define (frame-variables frame) (map car frame)
+(define (frame-values frame) (map cdr frame))
+
+
+; Exercise 4.14
+; Fails because for example (map + '(1 2)) will cause + to be interpreted as a direct application of + 
+
+; Exercise 4.15
+; (define (run-forever) (run-forever))
+; 
+; (define (try p)
+;   (if (halts? p p)
+;       (run-forever)
+;       'halted))
+; (halts? p a) returns #t if the application of p with object a halts and #f if it doesn't
+; What would happen if we were to evaluate the expression (try try)? 
+; (try try)  --> (if (halts? try try) (run-forever) 'halted) 
+;            --> if (halts? try try) is true then we call (run-forever) but that would mean try try (from the first call) doesn't actually halt
+;            --> if (halts? try try) is false then we return 'halted but that would mean try try (from the first call) does actually halt
+;            --> either way there is a contradiction, so p and a cannot be arbitrary since we showed a counter example which doesn't work

@@ -23,7 +23,7 @@
 
 ; Changed the name to mapply to avoid confusion with the underlying scheme's apply
 ; primitive procedures are applied directly by mapping them to underlying scheme's primitives
-; compound ones
+; compound ones involve evaluate the body of the procedure which could be a sequence of statements
 (define (mapply procedure arguments)
   (cond ((primitive-procedure? procedure)
          (apply-primitive-procedure procedure arguments))
