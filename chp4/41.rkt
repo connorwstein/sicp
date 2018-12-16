@@ -66,15 +66,31 @@
 ; ) 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+; Exercise 4.6
+; Implement a syntactic transformation let->combination that reduces evaluating let expressions to evaluating combinations of the type shown above, and add the appropriate clause to eval to handle let expressions.
+; (let ((<var1> <exp1>) ... (<varn> <expn>))
+;   <body>)
+; 
+; is equivalent to
+; 
+; ((lambda (<var1> ... <varn>)
+;    <body>)
+;  <exp1>
+;  
+;  <expn>)
+; let-statement is a list of (let (list of pairs) body)
+; Need to extract 
+; cadr let-statemnet --> list of pairs
+; need to get the first element of each and build a list 
+; cddr let-statemnet --> body
+(define (let->combination let-statement) 
+	(define (get-vars pairs) 
+		(if ((null? pairs) '())
+			(cons (caar pairs) (get-vars (cdr pairs))))
+	)
+	(define (get-exp pairs)
+		(if ((null? pairs) '())
+			(cons (cdar pairs) (get-vars (cdr pairs))))
+	)
+	(cons (make-lambda (get-vars (cadr let-statement)) cddr let-statement) (get-exp (cadr let-statement)))
+)
