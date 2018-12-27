@@ -196,6 +196,7 @@
       (if (< (length vars) (length vals))
           (error "Too many arguments supplied" vars vals)
           (error "Too few arguments supplied" vars vals))))
+
 (define (lookup-variable-value var env)
   (define (env-loop env)
     (define (scan vars vals)

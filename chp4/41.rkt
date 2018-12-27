@@ -129,3 +129,66 @@
 ;            --> if (halts? try try) is true then we call (run-forever) but that would mean try try (from the first call) doesn't actually halt
 ;            --> if (halts? try try) is false then we return 'halted but that would mean try try (from the first call) does actually halt
 ;            --> either way there is a contradiction, so p and a cannot be arbitrary since we showed a counter example which doesn't work
+
+
+; Exercise 4.16
+; a) was to add the *unassigned* handling
+(define (lookup-variable-value var env)
+  (define (env-loop env)
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars))
+             (car vals))
+            ((eq? (car vals) '*unassigned*) (error "Value is *unassigned*"))
+            (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env the-empty-environment)
+        (error "Unbound variable" var)
+        (let ((frame (first-frame env)))
+          (scan (frame-variables frame)
+                (frame-values frame)))))
+  (env-loop env))
+
+; b) Scan out defines which takes a procedure body and returns an equivalent one 
+; body is a list of expressions 
+(define (scan-out body) 
+    (define (is-def x) 
+        (and (pair? x) (eq? (car x) 'define)))
+    (define defs (filter is-def body)
+    (define non-defs  (filter (lambda (x) (not (is-def x))) body))
+    ; Now build the transformed body one big let expression
+    (define unassigned (map (lambda (x) (cons (car x) '*unassigned*)) defs))
+    (define sets (map (lambda (x) (list 'set! (car x) (cadr x))) defs))
+    ; Wishful thinking - assume we have this variadic function
+    ; first argument is a list of pairs for the let and the rest are expressions 
+    (make-let unassigned sets non-defs) 
+)
+
+; Exercise 4.20 a)
+; letrec is a variation on let where the expressions which provide initial values for the variables
+; are evaluated in an environment which contains all the expressions
+; Implement letrec by transforming it into an equivalent let expression we need
+; letrec expr is of the form (list 'letrec <list of bindings pairs> <expressions>) 
+; Need to convert it to the let unassigned followed by sets (similar to 4.16)
+; Need to use a begin so we can have the sets! in there 
+(define (unassigned letrec-expr) (map (lambda (x) (cons (car x) '*unassigned*)) (cadr letrec-expr))
+(define (sets letrec-expr) (map (lambda (x) (list ('set! (car x) (cadr x))) (cadr letrec-expr))))
+(define (letrec->let letrec-expr)
+   (list 'let (unassigned letrec-expr) (make-begin (append sets (cddr letrec-expr)))) 
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
