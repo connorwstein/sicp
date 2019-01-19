@@ -54,15 +54,3 @@
   (let ((sent (parse-sentence)))
     (require (null? *unparsed*))
     sent))
-
-; Exercise 4.49 
-; Sentence generation
-
-
-
-
-
-
-
-
-
